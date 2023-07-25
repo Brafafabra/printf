@@ -1,5 +1,5 @@
-#include <stdio.h>
 #include <stdarg.h>
+#include "main.h"
 
 /**
  * _printf - Produces output according to a format.
@@ -10,10 +10,12 @@
  */
 int _printf(const char *format, ...)
 {
+	int chars_printed = 0;
+	int temp;
+	int divisor;
+	int i;
 	va_list args;
 	va_start(args, format);
-
-	int chars_printed = 0;
 
 	while (*format)
 	{
@@ -26,40 +28,82 @@ int _printf(const char *format, ...)
 			/* Handle the conversion specifier */
 			switch (*format)
 			{
-			case 'c':
-				/* Fetch the next argument of type char and print it */
-				putchar(va_arg(args, int));
-				chars_printed++;
-				break;
-
-			case 's':
-			{
-				/* Fetch the next argument of type char* (string) and print it */
-				const char *str = va_arg(args, const char *);
-				while (*str)
-				{
-					putchar(*str);
-					str++;
+				case 'c':
+					/* Fetch the next argument of type char and print it */
+					_putchar(va_arg(args, int));
 					chars_printed++;
+					break;
+
+				case 's':
+				{
+					/* Fetch the next argument of type char* (string) and print it */
+					const char *str = va_arg(args, const char *);
+					while (*str)
+					{
+						_putchar(*str);
+						str++;
+						chars_printed++;
+					}
+					break;
 				}
-				break;
-			}
 
-			case '%':
-				/* Handle the %% case (print a single '%') */
-				putchar('%');
-				chars_printed++;
-				break;
+				case 'd':
+				case 'i':
+				{
+					/* Fetch the next argument of type int and print it */
+					int num = va_arg(args, int);
+					int num_chars = 0;
 
-			default:
-				/* If the conversion specifier is not recognized, ignore it */
-				break;
+					/* Handle negative numbers */
+					if (num < 0)
+					{
+						_putchar('-');
+						chars_printed++;
+						num = -num;
+					}
+
+					/* Calculate the number of digits in the integer */
+					temp = num;
+					do
+					{
+						temp /= 10;
+						num_chars++;
+					} while (temp);
+
+					/* Print each digit in reverse order */
+					divisor = 1;
+					for (i = 1; i < num_chars; i++)
+						divisor *= 10;
+
+					while (divisor)
+					{
+						int digit = num / divisor;
+						_putchar(digit + '0');
+						chars_printed++;
+						num %= divisor;
+						divisor /= 10;
+					}
+
+					_putchar(num + '0');
+					chars_printed++;
+					break;
+				}
+
+				case '%':
+					/* Handle the %% case (print a single '%') */
+					_putchar('%');
+					chars_printed++;
+					break;
+
+				default:
+					/* If the conversion specifier is not recognized, ignore it */
+					break;
 			}
 		}
 		else
 		{
 			/* Regular character, just print it */
-			putchar(*format);
+			_putchar(*format);
 			chars_printed++;
 		}
 
