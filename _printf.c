@@ -1,103 +1,96 @@
 #include <stdarg.h>
-#include "main.h"
+#include <unistd.h>
 
 /**
- * _printf - produces output according to a format
- * @format: character string
- * Return: number of characters printed excluding null byte
+ * _putchar - Writes a character to stdout
+ * @c: The character to print
+ *
+ * Return: 1 on success, -1 on error.
+ */
+int _putchar(char c)
+{
+	return write(1, &c, 1);
+}
+
+/**
+ * _printf - Produces output according to a format
+ * @format: The format string
+ *
+ * Return: The number of characters printed (excluding the null byte used to
+ *         end output to strings)
  */
 int _printf(const char *format, ...)
 {
-    int printed = 0;
-    int temp;
-    int divisor;
-    int i;
-    va_list args;
-    va_start(args, format);
+	va_list args;
+	int count = 0;
 
-    while (*format)
-    {
-        if (*format == '%')
-        {
-            format++;
-            if (*format == '\0')
-                break;
+	va_start(args, format);
 
-            switch (*format)
-            {
-                case 'c':
-                    _putchar(va_arg(args, int));
-                    printed++;
-                    break;
+	while (*format)
+	{
+		if (*format != '%')
+		{
+			_putchar(*format);
+			count++;
+		}
+		else
+		{
+			format++;
+			if (*format == 'c')
+			{
+				char c = va_arg(args, int);
+				_putchar(c);
+				count++;
+			}
+			else if (*format == 's')
+			{
+				char *str = va_arg(args, char *);
+				if (str == NULL)
+					str = "(null)";
+				while (*str)
+				{
+					_putchar(*str);
+					str++;
+					count++;
+				}
+			}
+			else if (*format == 'd' || *format == 'i')
+			{
+				int num = va_arg(args, int);
+				int div = 1;
 
-                case 's':
-                {
-                    const char *str = va_arg(args, const char *);
-                    while (*str)
-                    {
-                        _putchar(*str);
-                        str++;
-                        printed++;
-                    }
-                    break;
-                }
+				if (num < 0)
+				{
+					_putchar('-');
+					count++;
+					num *= -1;
+				}
 
-                case 'd':
-                case 'i':
-                {
-                    int num = va_arg(args, int);
-                    int num_chars = 0;
+				while (num / div > 9)
+					div *= 10;
 
-                    if (num < 0)
-                    {
-                        _putchar('-');
-                        printed++;
-                        num = -num;
-                    }
+				while (div)
+				{
+					_putchar(num / div % 10 + '0');
+					count++;
+					div /= 10;
+				}
+			}
+			else if (*format == '%')
+			{
+				_putchar('%');
+				count++;
+			}
+			else
+			{
+				_putchar('%');
+				_putchar(*format);
+				count += 2;
+			}
+		}
+		format++;
+	}
 
-                    temp = num;
-                    do
-                    {
-                        temp /= 10;
-                        num_chars++;
-                    } while (temp);
-
-                    divisor = 1;
-                    for (i = 1; i < num_chars; i++)
-                        divisor *= 10;
-
-                    while (divisor)
-                    {
-                        int digit = num / divisor;
-                        _putchar(digit + '0');
-                        printed++;
-                        num %= divisor;
-                        divisor /= 10;
-                    }
-
-                    _putchar(num + '0');
-                    printed++;
-                    break;
-                }
-
-                case '%':
-                    _putchar('%');
-                    printed++;
-                    break;
-
-                default:
-                    break;
-            }
-        }
-        else
-        {
-            _putchar(*format);
-            printed++;
-        }
-
-        format++;
-    }
-
-    va_end(args);
-    return (printed);
+	va_end(args);
+	return (count);
 }
